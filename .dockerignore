@@ -1,0 +1,8 @@
+.git
+.aiops-spec
+backend/build
+frontend/dist
+frontend/node_modules
+node_modules
+.gradle
+*.log

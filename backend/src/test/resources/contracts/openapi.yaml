@@ -1,0 +1,44 @@
+openapi: 3.1.0
+info:
+  title: CMS Internal Knowledge, Documents, and Notices API
+  version: 0.1.0
+paths:
+  /api/v1/me:
+    get:
+      responses:
+        "200":
+          description: Current user profile
+  /api/v1/portal/home:
+    get:
+      responses:
+        "200":
+          description: Portal home content sections
+  /api/v1/content:
+    get:
+      responses:
+        "200":
+          description: Paged content results
+    post:
+      responses:
+        "201":
+          description: Draft content created
+  /api/v1/content/{contentId}/submit-review:
+    post:
+      responses:
+        "200":
+          description: Content moved to review
+  /api/v1/content/{contentId}/review:
+    post:
+      responses:
+        "200":
+          description: Review decision applied
+  /api/v1/content/{contentId}/publish:
+    post:
+      responses:
+        "200":
+          description: Content published or scheduled
+  /api/v1/content/{contentId}/acknowledgements:
+    post:
+      responses:
+        "201":
+          description: Acknowledgement recorded
