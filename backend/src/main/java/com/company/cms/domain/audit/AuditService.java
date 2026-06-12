@@ -55,9 +55,9 @@ public class AuditService {
             .filter(event -> to == null || !event.occurredAt().isAfter(to))
             .sorted(Comparator.comparing(AuditEventRecord::occurredAt).reversed())
             .toList();
-        int from = Math.min(page * size, filtered.size());
-        int to = Math.min(from + size, filtered.size());
-        var items = filtered.subList(from, to).stream().map(this::toDto).toList();
+        int pageStart = Math.min(page * size, filtered.size());
+        int pageEnd = Math.min(pageStart + size, filtered.size());
+        var items = filtered.subList(pageStart, pageEnd).stream().map(this::toDto).toList();
         int totalPages = filtered.isEmpty() ? 0 : (int) Math.ceil((double) filtered.size() / size);
         return new CmsDtos.AuditEventListResponse(items, new PageMeta(page, size, filtered.size(), totalPages));
     }
