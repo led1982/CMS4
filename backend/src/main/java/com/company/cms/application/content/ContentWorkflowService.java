@@ -102,8 +102,13 @@ public class ContentWorkflowService {
         if (item.getStatus() != ContentStatus.DRAFT && item.getStatus() != ContentStatus.REJECTED) {
             throw ApiException.conflict("Only draft or rejected content can be submitted for review");
         }
-        if (item.getTitle().isBlank() || item.getCategoryId().isBlank() || item.getAudienceId().isBlank()) {
-            throw ApiException.badRequest("MISSING_REQUIRED_METADATA", "Title, category, and audience are required before review");
+        if (isBlank(item.getTitle())
+            || isBlank(item.getSummary())
+            || isBlank(item.getBody())
+            || isBlank(item.getOwnerUserId())
+            || isBlank(item.getCategoryId())
+            || isBlank(item.getAudienceId())) {
+            throw ApiException.badRequest("MISSING_REQUIRED_METADATA", "Title, summary, body, owner, category, and audience are required before review");
         }
         boolean hasRejectedAttachment = contentRepository.listAttachments(item.getId()).stream()
             .anyMatch(attachment -> attachment.getValidationStatus() == AttachmentValidationStatus.REJECTED
@@ -164,7 +169,13 @@ public class ContentWorkflowService {
     public ContentItem getForUser(String contentId, CmsSecurityContext context) {
         var item = contentRepository.get(contentId);
         if (!authorizationPolicy.canViewContent(context, item)) {
+            auditService.record(context.currentUser().id(), "DENIED", "CONTENT_ITEM", contentId, "Denied content detail access");
             throw ApiException.forbidden("You do not have access to this content");
+        }
+        if (authorizationPolicy.canViewPortalContent(context, item)) {
+            item.recordView();
+            contentRepository.save(item);
+            auditService.record(context.currentUser().id(), "VIEWED", "CONTENT_ITEM", item.getId(), "Viewed portal content");
         }
         return item;
     }
@@ -188,5 +199,9 @@ public class ContentWorkflowService {
 
     private List<String> tags(List<String> tags) {
         return tags == null ? List.of() : tags;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

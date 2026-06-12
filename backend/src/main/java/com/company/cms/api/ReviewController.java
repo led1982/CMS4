@@ -31,10 +31,20 @@ public class ReviewController {
         return mapper.toDetail(reviewService.review(contentId, request, context), context.currentUser().id());
     }
 
+    @PostMapping("/reviews/{reviewId}/decision")
+    public ContentDetail decideReview(@PathVariable String reviewId, @Valid @RequestBody ReviewDecisionRequest request, CmsSecurityContext context) {
+        return mapper.toDetail(reviewService.review(reviewId, request, context), context.currentUser().id());
+    }
+
     @GetMapping("/review/queue")
     public List<ContentSummary> queue(CmsSecurityContext context) {
         return reviewService.queue(context).stream()
             .map(item -> mapper.toSummary(item, context.currentUser().id()))
             .toList();
+    }
+
+    @GetMapping("/reviews")
+    public List<ContentSummary> reviews(CmsSecurityContext context) {
+        return queue(context);
     }
 }

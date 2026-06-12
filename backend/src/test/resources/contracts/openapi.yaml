@@ -42,3 +42,42 @@ paths:
       responses:
         "201":
           description: Acknowledgement recorded
+  /api/v1/notices/pending:
+    get:
+      responses:
+        "200":
+          description: Pending notices
+  /api/v1/notices/{noticeId}/acknowledgements:
+    post:
+      responses:
+        "201":
+          description: Notice acknowledgement recorded
+  /api/v1/notices/{noticeId}/acknowledgements/report:
+    get:
+      responses:
+        "200":
+          description: Notice acknowledgement report
+  /api/v1/bookmarks:
+    get:
+      responses:
+        "200":
+          description: User bookmarks
+    post:
+      responses:
+        "201":
+          description: Bookmark created
+  /api/v1/bookmarks/{contentId}:
+    delete:
+      responses:
+        "204":
+          description: Bookmark removed
+  /api/v1/audit-events:
+    get:
+      responses:
+        "200":
+          description: Audit search results
+  /api/v1/reports/content-health:
+    get:
+      responses:
+        "200":
+          description: Content health report

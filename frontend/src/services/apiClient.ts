@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const DEFAULT_PERSONA = import.meta.env.VITE_DEFAULT_PERSONA ?? "employee";
 
-export type RoleCode = "EMPLOYEE" | "AUTHOR" | "REVIEWER" | "EDITOR" | "ADMINISTRATOR";
+export type RoleCode = "EMPLOYEE" | "AUTHOR" | "REVIEWER" | "PUBLISHER" | "NOTICE_MANAGER" | "EDITOR" | "AUDITOR" | "ADMINISTRATOR";
 export type ContentType = "KNOWLEDGE_ARTICLE" | "DOCUMENT_RECORD" | "NOTICE";
 export type ContentStatus = "DRAFT" | "IN_REVIEW" | "REJECTED" | "SCHEDULED" | "PUBLISHED" | "EXPIRED" | "ARCHIVED" | "DELETED";
 export type Priority = "NORMAL" | "PINNED" | "URGENT";

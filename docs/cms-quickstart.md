@@ -15,8 +15,13 @@ Open `http://localhost:5173`. The frontend proxies API requests to the `api` ser
 Development personas are selected from the header:
 
 - `Employee`: portal search, content detail, attachments, acknowledgements
+- `HR Employee` / `Engineering Employee`: targeted-audience visibility validation
 - `Author`: draft creation and submission
+- `HR Author`: HR-targeted content validation
 - `Reviewer`: review queue, approve/reject, publish
+- `HR Reviewer` / `HR Publisher`: quickstart review and publication handoff
+- `Notice Manager`: targeted notice and acknowledgement reporting
+- `Auditor`: audit and content-health reporting
 - `Editor`: acknowledgement dashboard
 - `Admin`: taxonomy, access governance, audit log
 
@@ -36,3 +41,14 @@ The Docker image sets `SPRING_FLYWAY_ENABLED=true` and applies those migrations 
 - Restore: `cat cms-backup.sql | docker compose exec -T db psql -U cms cms`
 
 Attachment metadata is stored by the API. The MVP uses generated storage references; production should replace this with approved object or document storage while retaining the authorization checks in the API.
+
+## Contract Paths
+
+The API supports both the original MVP paths and the generated contract aliases for notices, bookmarks, audit search, and content health:
+
+- `GET /api/v1/notices/pending`
+- `POST /api/v1/notices/{noticeId}/acknowledgements`
+- `GET /api/v1/notices/{noticeId}/acknowledgements/report`
+- `GET|POST /api/v1/bookmarks`
+- `GET /api/v1/audit-events`
+- `GET /api/v1/reports/content-health`

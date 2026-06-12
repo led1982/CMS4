@@ -231,7 +231,10 @@ INSERT INTO roles (code, name, description) VALUES
     ('EMPLOYEE', 'Employee', 'Can browse and read eligible published content'),
     ('AUTHOR', 'Author', 'Can create drafts and submit content for review'),
     ('REVIEWER', 'Reviewer', 'Can approve, reject, or request changes'),
+    ('PUBLISHER', 'Publisher', 'Can publish approved content'),
+    ('NOTICE_MANAGER', 'Notice Manager', 'Can manage targeted notices and acknowledgement reports'),
     ('EDITOR', 'Editor', 'Can manage lifecycle dashboards and reports'),
+    ('AUDITOR', 'Auditor', 'Can search audit events and operational evidence'),
     ('ADMINISTRATOR', 'Administrator', 'Can manage governance and audit');
 
 INSERT INTO users (id, employee_id, display_name, email, department, job_title, identity_provider_subject) VALUES

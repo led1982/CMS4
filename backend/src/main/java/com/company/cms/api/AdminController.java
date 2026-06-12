@@ -75,9 +75,9 @@ public class AdminController {
         @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
         CmsSecurityContext context
     ) {
-        if (!authorizationPolicy.canAdminister(context)) {
-            throw ApiExceptionHandler.ApiException.forbidden("Only administrators can read the audit log");
+        if (!authorizationPolicy.canViewAudit(context)) {
+            throw ApiExceptionHandler.ApiException.forbidden("Only auditors or administrators can read the audit log");
         }
-        return auditService.search(actorUserId, targetType, targetId, action, page, size);
+        return auditService.search(actorUserId, targetType, targetId, action, from, to, page, size);
     }
 }

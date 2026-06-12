@@ -31,9 +31,9 @@ export function AppShell() {
   }, [persona]);
 
   const roles = profile?.roles ?? ["EMPLOYEE"];
-  const canAuthor = useMemo(() => roles.some((role) => ["AUTHOR", "EDITOR", "ADMINISTRATOR"].includes(role)), [roles]);
+  const canAuthor = useMemo(() => roles.some((role) => ["AUTHOR", "NOTICE_MANAGER", "EDITOR", "ADMINISTRATOR"].includes(role)), [roles]);
   const canReview = useMemo(() => roles.some((role) => ["REVIEWER", "EDITOR", "ADMINISTRATOR"].includes(role)), [roles]);
-  const canEdit = useMemo(() => roles.some((role) => ["EDITOR", "ADMINISTRATOR"].includes(role)), [roles]);
+  const canEdit = useMemo(() => roles.some((role) => ["NOTICE_MANAGER", "EDITOR", "ADMINISTRATOR"].includes(role)), [roles]);
   const canAdmin = useMemo(() => roles.includes("ADMINISTRATOR"), [roles]);
 
   function onSearch(event: FormEvent) {
@@ -67,10 +67,18 @@ export function AppShell() {
             }}
           >
             <option value="employee">Employee</option>
+            <option value="employee.hr">HR Employee</option>
+            <option value="employee.eng">Engineering Employee</option>
             <option value="author">Author</option>
+            <option value="author.hr">HR Author</option>
             <option value="reviewer">Reviewer</option>
+            <option value="reviewer.hr">HR Reviewer</option>
+            <option value="publisher.hr">HR Publisher</option>
+            <option value="notice.manager">Notice Manager</option>
+            <option value="auditor.cms">Auditor</option>
             <option value="editor">Editor</option>
             <option value="admin">Admin</option>
+            <option value="admin.cms">CMS Admin</option>
           </select>
         </div>
       </header>

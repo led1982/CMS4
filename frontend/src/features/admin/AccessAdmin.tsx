@@ -38,7 +38,10 @@ export function AccessAdmin() {
             <select value={role} onChange={(event) => setRole(event.target.value as RoleCode)}>
               <option value="AUTHOR">Author</option>
               <option value="REVIEWER">Reviewer</option>
+              <option value="PUBLISHER">Publisher</option>
+              <option value="NOTICE_MANAGER">Notice manager</option>
               <option value="EDITOR">Editor</option>
+              <option value="AUDITOR">Auditor</option>
               <option value="ADMINISTRATOR">Administrator</option>
             </select>
           </label>

@@ -56,6 +56,9 @@ public class TaxonomyService {
         if (governanceRepository.categoryNameExists(request.parentId(), request.name(), categoryId)) {
             throw ApiException.conflict("A category with this name already exists under the same parent");
         }
+        if (wouldCreateCycle(categoryId, request.parentId())) {
+            throw ApiException.conflict("A category cannot be moved under itself or one of its descendants");
+        }
         if (Boolean.FALSE.equals(request.active()) && isReferencedByPublishedContent(categoryId)) {
             throw ApiException.conflict("Category is referenced by content; reassign or archive content before deactivation");
         }
@@ -92,6 +95,17 @@ public class TaxonomyService {
 
     private boolean isReferencedByPublishedContent(String categoryId) {
         return contentRepository.list().stream().anyMatch(item -> item.getCategoryId().equals(categoryId));
+    }
+
+    private boolean wouldCreateCycle(String categoryId, String requestedParentId) {
+        String cursor = requestedParentId;
+        while (cursor != null && !cursor.isBlank()) {
+            if (cursor.equals(categoryId)) {
+                return true;
+            }
+            cursor = governanceRepository.getCategory(cursor).parentId();
+        }
+        return false;
     }
 
     private void requireAdmin(CmsSecurityContext context) {
