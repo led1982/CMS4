@@ -1,0 +1,554 @@
+openapi: 3.1.0
+info:
+  title: CMS Scope Artifact Generation API
+  version: 0.1.0
+  description: REST contract for importing CMS scope requests, resolving effective domains, generating draft artifacts, and validating generation_order dependencies.
+servers:
+  - url: https://cms-scope.internal.example.com
+    description: Internal production endpoint
+  - url: http://localhost:3000
+    description: Local development endpoint
+tags:
+  - name: ScopeRequests
+  - name: Domains
+  - name: Artifacts
+  - name: Validation
+paths:
+  /scope-requests:
+    post:
+      tags: [ScopeRequests]
+      operationId: createScopeRequest
+      summary: Create a CMS scope request from imported request data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeRequestCreate'
+      responses:
+        '201':
+          description: Scope request created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopeRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    get:
+      tags: [ScopeRequests]
+      operationId: listScopeRequests
+      summary: List CMS scope requests.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ScopeRequestStatus'
+      responses:
+        '200':
+          description: Scope request list.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScopeRequestSummary'
+  /scope-requests/{requestId}:
+    get:
+      tags: [ScopeRequests]
+      operationId: getScopeRequest
+      summary: Get one CMS scope request with domain, artifact, and validation summary.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Scope request detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScopeRequestDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /scope-requests/{requestId}/resolve-domains:
+    post:
+      tags: [Domains]
+      operationId: resolveDomains
+      summary: Resolve selected and auto-added inputs into effective CMS domains.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Effective domains resolved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DomainResolutionResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /scope-requests/{requestId}/generation-order:
+    put:
+      tags: [Domains]
+      operationId: replaceGenerationOrder
+      summary: Replace generation_order stage assignments before validation.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerationOrderUpdate'
+      responses:
+        '200':
+          description: Generation order updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationOrder'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /scope-requests/{requestId}/generate-artifacts:
+    post:
+      tags: [Artifacts]
+      operationId: generateArtifacts
+      summary: Generate draft spec.md, plan.md, and tasks.md artifact sets for every effective domain.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtifactGenerationRequest'
+      responses:
+        '202':
+          description: Artifact generation accepted and completed synchronously for the initial scope.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactGenerationResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /scope-requests/{requestId}/artifact-sets:
+    get:
+      tags: [Artifacts]
+      operationId: listArtifactSets
+      summary: List artifact sets for all effective domains in a request.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Artifact set list.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ArtifactSet'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /scope-requests/{requestId}/artifact-sets/{domainKey}/artifacts/{artifactType}:
+    get:
+      tags: [Artifacts]
+      operationId: getArtifact
+      summary: Retrieve one generated draft artifact.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/DomainKey'
+        - name: artifactType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ArtifactType'
+      responses:
+        '200':
+          description: Artifact content and metadata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artifact'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /scope-requests/{requestId}/validate:
+    post:
+      tags: [Validation]
+      operationId: validateScopeRequest
+      summary: Validate artifact coverage, generation_order, and requires dependencies.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Validation report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationReport'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+components:
+  parameters:
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DomainKey:
+      name: domainKey
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9]+(-[a-z0-9]+)*$'
+  responses:
+    BadRequest:
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Request state does not allow the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ScopeRequestCreate:
+      type: object
+      required: [requestCode, slug, requestType, title, goal, acceptanceCriteria]
+      properties:
+        requestCode:
+          type: string
+          example: CMS4-4
+        slug:
+          type: string
+          example: cms4
+        requestType:
+          type: string
+          enum: [new, change, fix]
+          example: new
+        title:
+          type: string
+          example: cms
+        goal:
+          type: string
+          example: cms
+        selectedDomains:
+          type: array
+          items:
+            type: string
+          default: []
+        autoAddedDomains:
+          type: array
+          items:
+            type: string
+          default: []
+        declaredEffectiveDomains:
+          type: array
+          items:
+            type: string
+          default: []
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainDependencyInput'
+          default: []
+        acceptanceCriteria:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        sourceText:
+          type: string
+    ScopeRequest:
+      allOf:
+        - $ref: '#/components/schemas/ScopeRequestCreate'
+        - type: object
+          required: [id, status, createdAt, updatedAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              $ref: '#/components/schemas/ScopeRequestStatus'
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    ScopeRequestSummary:
+      type: object
+      required: [id, requestCode, title, status, effectiveDomainCount, artifactSetCount, validationStatus]
+      properties:
+        id:
+          type: string
+          format: uuid
+        requestCode:
+          type: string
+        title:
+          type: string
+        status:
+          $ref: '#/components/schemas/ScopeRequestStatus'
+        effectiveDomainCount:
+          type: integer
+          minimum: 0
+        artifactSetCount:
+          type: integer
+          minimum: 0
+        validationStatus:
+          $ref: '#/components/schemas/ValidationStatus'
+    ScopeRequestDetail:
+      type: object
+      required: [request, domains, artifactSets, latestValidation]
+      properties:
+        request:
+          $ref: '#/components/schemas/ScopeRequest'
+        domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+        artifactSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactSet'
+        latestValidation:
+          $ref: '#/components/schemas/ValidationReport'
+    ScopeRequestStatus:
+      type: string
+      enum: [draft, resolved, generated, validated, blocked]
+    DomainDependencyInput:
+      type: object
+      required: [domainKey, requires]
+      properties:
+        domainKey:
+          type: string
+        requires:
+          type: array
+          items:
+            type: string
+    Domain:
+      type: object
+      required: [domainKey, displayName, source, requires, generationStage, status]
+      properties:
+        domainKey:
+          type: string
+          example: cms-core
+        displayName:
+          type: string
+          example: CMS Core
+        source:
+          type: string
+          enum: [selected, auto_added, declared_effective, default]
+        requires:
+          type: array
+          items:
+            type: string
+        generationStage:
+          type: integer
+          minimum: 1
+        description:
+          type: string
+        status:
+          type: string
+          enum: [pending, planned, generated, validated, error]
+    DomainResolutionResult:
+      type: object
+      required: [requestId, domains, assumptions]
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        domains:
+          type: array
+          items:
+            $ref: '#/components/schemas/Domain'
+        assumptions:
+          type: array
+          items:
+            type: string
+          example:
+            - Empty CMS input defaulted to cms-core.
+    GenerationOrderUpdate:
+      type: object
+      required: [stages]
+      properties:
+        stages:
+          type: array
+          items:
+            type: object
+            required: [stageNumber, domainKeys]
+            properties:
+              stageNumber:
+                type: integer
+                minimum: 1
+              domainKeys:
+                type: array
+                items:
+                  type: string
+    GenerationOrder:
+      type: object
+      required: [stages]
+      properties:
+        stages:
+          type: array
+          items:
+            type: object
+            required: [stageNumber, domainKeys, status]
+            properties:
+              stageNumber:
+                type: integer
+              domainKeys:
+                type: array
+                items:
+                  type: string
+              status:
+                type: string
+                enum: [pending, ready, generated, validated, blocked]
+    ArtifactGenerationRequest:
+      type: object
+      properties:
+        forceRegenerate:
+          type: boolean
+          default: false
+    ArtifactGenerationResult:
+      type: object
+      required: [requestId, artifactSets]
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        artifactSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactSet'
+    ArtifactSet:
+      type: object
+      required: [domainKey, status, artifacts]
+      properties:
+        domainKey:
+          type: string
+        status:
+          type: string
+          enum: [pending, complete, incomplete, validated, error]
+        contentFingerprint:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        validatedAt:
+          type: string
+          format: date-time
+        artifacts:
+          type: array
+          minItems: 3
+          items:
+            $ref: '#/components/schemas/ArtifactSummary'
+    ArtifactSummary:
+      type: object
+      required: [artifactType, path, status]
+      properties:
+        artifactType:
+          $ref: '#/components/schemas/ArtifactType'
+        path:
+          type: string
+          example: .specify/specs/001-feature/cms-core/spec.md
+        status:
+          type: string
+          enum: [draft, generated, validated, incomplete, error]
+    Artifact:
+      allOf:
+        - $ref: '#/components/schemas/ArtifactSummary'
+        - type: object
+          required: [content]
+          properties:
+            title:
+              type: string
+            generatedFromTemplate:
+              type: string
+            contentFingerprint:
+              type: string
+            content:
+              type: string
+    ArtifactType:
+      type: string
+      enum: [spec, plan, tasks]
+    ValidationReport:
+      type: object
+      required: [status, errorCount, warningCount, findings]
+      properties:
+        status:
+          $ref: '#/components/schemas/ValidationStatus'
+        errorCount:
+          type: integer
+          minimum: 0
+        warningCount:
+          type: integer
+          minimum: 0
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationFinding'
+    ValidationStatus:
+      type: string
+      enum: [not_run, passed, passed_with_warnings, failed]
+    ValidationFinding:
+      type: object
+      required: [severity, findingType, domainKey, message, recommendedAction]
+      properties:
+        severity:
+          type: string
+          enum: [info, warning, error]
+        findingType:
+          type: string
+          enum:
+            - missing_artifact
+            - missing_dependency
+            - later_stage_dependency
+            - self_dependency
+            - cycle
+            - duplicate_domain
+            - assumption_applied
+        domainKey:
+          type: string
+        relatedDomainKey:
+          type: string
+        message:
+          type: string
+        recommendedAction:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
