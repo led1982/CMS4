@@ -168,6 +168,26 @@ public class ContentItem {
         touch();
     }
 
+    public boolean publishIfDue(Instant now) {
+        if (status != ContentStatus.SCHEDULED || (effectiveFrom != null && effectiveFrom.isAfter(now))) {
+            return false;
+        }
+        status = ContentStatus.PUBLISHED;
+        publishedAt = now;
+        currentPublishedVersionId = draftVersionId;
+        touch();
+        return true;
+    }
+
+    public boolean expireIfDue(Instant now) {
+        if (status != ContentStatus.PUBLISHED || expiresAt == null || expiresAt.isAfter(now)) {
+            return false;
+        }
+        status = ContentStatus.EXPIRED;
+        touch();
+        return true;
+    }
+
     public void archive() {
         status = ContentStatus.ARCHIVED;
         archivedAt = Instant.now();
@@ -177,6 +197,10 @@ public class ContentItem {
     public void delete() {
         status = ContentStatus.DELETED;
         touch();
+    }
+
+    public void recordView() {
+        viewCount++;
     }
 
     public boolean isPortalVisibleNow() {

@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: Internal Knowledge CMS and User Portal API
+  version: 0.1.0
+servers:
+  - url: /api/v1
+paths:
+  /me:
+    get:
+      summary: Get current user profile.
+      responses:
+        "200":
+          description: Current user.
+  /portal/home:
+    get:
+      summary: Get portal home content.
+      responses:
+        "200":
+          description: Portal home.
+  /content:
+    get:
+      summary: Search visible content.
+      responses:
+        "200":
+          description: Search result page.
+    post:
+      summary: Create draft content.
+      responses:
+        "201":
+          description: Draft created.
+  /content/{contentId}:
+    get:
+      summary: Get authorized content detail.
+      responses:
+        "200":
+          description: Content detail.
+        "403":
+          description: Not authorized.
+    patch:
+      summary: Update draft content.
+      responses:
+        "200":
+          description: Content updated.
+  /content/{contentId}/submit-review:
+    post:
+      summary: Submit draft for review.
+      responses:
+        "200":
+          description: Submitted.
+  /content/{contentId}/review:
+    post:
+      summary: Record review decision.
+      responses:
+        "200":
+          description: Decision recorded.
+  /content/{contentId}/publish:
+    post:
+      summary: Publish or schedule content.
+      responses:
+        "200":
+          description: Published or scheduled.
+  /content/{contentId}/archive:
+    post:
+      summary: Archive content.
+      responses:
+        "200":
+          description: Archived.
+  /content/{contentId}/attachments:
+    get:
+      summary: List authorized attachments.
+      responses:
+        "200":
+          description: Attachment metadata.
+    post:
+      summary: Register attachment metadata.
+      responses:
+        "201":
+          description: Attachment registered.
+        "413":
+          description: File too large.
+  /content/{contentId}/attachments/{attachmentId}:
+    delete:
+      summary: Delete attachment metadata.
+      responses:
+        "204":
+          description: Attachment deleted.
+  /content/{contentId}/attachments/{attachmentId}/download:
+    get:
+      summary: Get authorized attachment download URL.
+      responses:
+        "200":
+          description: Download descriptor.
+        "403":
+          description: Not authorized.
+  /bookmarks:
+    get:
+      summary: List bookmarks.
+      responses:
+        "200":
+          description: Bookmark list.
+    post:
+      summary: Bookmark visible content.
+      responses:
+        "201":
+          description: Bookmark created.
+  /bookmarks/{contentId}:
+    delete:
+      summary: Remove bookmark.
+      responses:
+        "204":
+          description: Bookmark removed.
+  /notices/pending:
+    get:
+      summary: List pending mandatory notices.
+      responses:
+        "200":
+          description: Pending notices.
+  /notices/{noticeId}/acknowledgements:
+    post:
+      summary: Acknowledge a notice.
+      responses:
+        "201":
+          description: Acknowledged.
+  /notices/{noticeId}/acknowledgements/report:
+    get:
+      summary: Get acknowledgement report.
+      responses:
+        "200":
+          description: Acknowledgement report.
+  /categories:
+    get:
+      summary: List category tree.
+      responses:
+        "200":
+          description: Categories.
+    post:
+      summary: Create category.
+      responses:
+        "201":
+          description: Category created.
+  /admin/audit-events:
+    get:
+      summary: Search audit events as admin or auditor.
+      responses:
+        "200":
+          description: Audit events.
+  /audit-events:
+    get:
+      summary: Search audit events.
+      responses:
+        "200":
+          description: Audit events.
+  /reports/content-health:
+    get:
+      summary: Report stale, expiring, archived, and recently published content.
+      responses:
+        "200":
+          description: Content health report.

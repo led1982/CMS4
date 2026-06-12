@@ -5,11 +5,13 @@ import { EmptyState, ErrorState, LoadingPanel } from "../../components/StatePane
 import { PriorityBadge, StatusBadge } from "../../components/StatusBadge";
 import { formatDate, useApi } from "../../services/apiClient";
 import { AcknowledgementPanel } from "./AcknowledgementPanel";
-import { getAttachmentDownload, getContent } from "./portalApi";
+import { createBookmark, deleteBookmark, getAttachmentDownload, getContent } from "./portalApi";
 
 export function ContentDetail() {
   const { contentId = "" } = useParams();
   const [refresh, setRefresh] = useState(0);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkMessage, setBookmarkMessage] = useState<string | null>(null);
   const { data, error, loading } = useApi(() => getContent(contentId), [contentId, refresh]);
 
   if (loading) return <LoadingPanel label="Loading content" />;
@@ -21,6 +23,18 @@ export function ContentDetail() {
   async function downloadAttachment(attachmentId: string) {
     const download = await getAttachmentDownload(data.id, attachmentId);
     window.location.assign(download.downloadUrl);
+  }
+
+  async function toggleBookmark() {
+    if (bookmarked) {
+      await deleteBookmark(data.id);
+      setBookmarked(false);
+      setBookmarkMessage("Bookmark removed");
+    } else {
+      await createBookmark(data.id);
+      setBookmarked(true);
+      setBookmarkMessage("Bookmarked");
+    }
   }
 
   return (
@@ -37,7 +51,13 @@ export function ContentDetail() {
             <span>Updated {formatDate(data.updatedAt)}</span>
           </div>
         </div>
+        <div className="button-group">
+          <button type="button" className="secondary" onClick={toggleBookmark}>
+            {bookmarked ? "Remove Bookmark" : "Bookmark"}
+          </button>
+        </div>
       </header>
+      {bookmarkMessage && <p className="inline-success">{bookmarkMessage}</p>}
 
       <AcknowledgementPanel content={data} onAcknowledged={() => setRefresh((value) => value + 1)} />
 

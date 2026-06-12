@@ -20,6 +20,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class GovernanceRepository {
     public static final String ALL_EMPLOYEES_AUDIENCE_ID = "aud-all";
+    public static final String HR_DEPARTMENT_AUDIENCE_ID = "aud-hr";
+    public static final String ENGINEERING_DEPARTMENT_AUDIENCE_ID = "aud-eng";
     public static final String HR_POLICIES_CATEGORY_ID = "cat-hr";
     public static final String IT_GUIDES_CATEGORY_ID = "cat-it";
     public static final String DEFAULT_REVIEWER_GROUP_ID = "review-hr";
@@ -32,13 +34,20 @@ public class GovernanceRepository {
     @PostConstruct
     void seed() {
         audiences.put(ALL_EMPLOYEES_AUDIENCE_ID, new Audience(ALL_EMPLOYEES_AUDIENCE_ID, "All Employees", AudienceType.ALL_COMPANY, Map.of("scope", "all"), true));
+        audiences.put(HR_DEPARTMENT_AUDIENCE_ID, new Audience(HR_DEPARTMENT_AUDIENCE_ID, "HR Department", AudienceType.DEPARTMENT, Map.of("department", "HR"), true));
+        audiences.put(ENGINEERING_DEPARTMENT_AUDIENCE_ID, new Audience(ENGINEERING_DEPARTMENT_AUDIENCE_ID, "Engineering Department", AudienceType.DEPARTMENT, Map.of("department", "Engineering"), true));
         categories.put(HR_POLICIES_CATEGORY_ID, new Category(HR_POLICIES_CATEGORY_ID, null, "HR Policies", "hr-policies", "Policies, benefits, and compliance notices", "author", ALL_EMPLOYEES_AUDIENCE_ID, DEFAULT_REVIEWER_GROUP_ID, 10, true));
         categories.put(IT_GUIDES_CATEGORY_ID, new Category(IT_GUIDES_CATEGORY_ID, null, "IT Guides", "it-guides", "Internal technology guides and procedures", "admin", ALL_EMPLOYEES_AUDIENCE_ID, DEFAULT_REVIEWER_GROUP_ID, 20, true));
         categories.put("cat-it-security", new Category("cat-it-security", IT_GUIDES_CATEGORY_ID, "Security", "security", "Security guidance and required awareness notices", "admin", ALL_EMPLOYEES_AUDIENCE_ID, DEFAULT_REVIEWER_GROUP_ID, 10, true));
         tags.put("tag-policy", new Tag("tag-policy", "Policy", "policy", "Official policy content", true));
         tags.put("tag-security", new Tag("tag-security", "Security", "security", "Security awareness and IT guidance", true));
         roleAssignments.put("ra-author", new RoleAssignment("ra-author", "author", RoleCode.AUTHOR, "CATEGORY", HR_POLICIES_CATEGORY_ID, Instant.now(), null));
+        roleAssignments.put("ra-author-hr", new RoleAssignment("ra-author-hr", "author.hr", RoleCode.AUTHOR, "CATEGORY", HR_POLICIES_CATEGORY_ID, Instant.now(), null));
         roleAssignments.put("ra-reviewer", new RoleAssignment("ra-reviewer", "reviewer", RoleCode.REVIEWER, "CATEGORY", HR_POLICIES_CATEGORY_ID, Instant.now(), null));
+        roleAssignments.put("ra-reviewer-hr", new RoleAssignment("ra-reviewer-hr", "reviewer.hr", RoleCode.REVIEWER, "CATEGORY", HR_POLICIES_CATEGORY_ID, Instant.now(), null));
+        roleAssignments.put("ra-publisher-hr", new RoleAssignment("ra-publisher-hr", "publisher.hr", RoleCode.PUBLISHER, "CATEGORY", HR_POLICIES_CATEGORY_ID, Instant.now(), null));
+        roleAssignments.put("ra-notice-manager", new RoleAssignment("ra-notice-manager", "notice.manager", RoleCode.NOTICE_MANAGER, "GLOBAL", null, Instant.now(), null));
+        roleAssignments.put("ra-auditor", new RoleAssignment("ra-auditor", "auditor.cms", RoleCode.AUDITOR, "GLOBAL", null, Instant.now(), null));
         roleAssignments.put("ra-editor", new RoleAssignment("ra-editor", "editor", RoleCode.EDITOR, "GLOBAL", null, Instant.now(), null));
         roleAssignments.put("ra-admin", new RoleAssignment("ra-admin", "admin", RoleCode.ADMINISTRATOR, "GLOBAL", null, Instant.now(), null));
     }

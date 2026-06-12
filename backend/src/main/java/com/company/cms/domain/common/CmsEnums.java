@@ -31,7 +31,10 @@ public final class CmsEnums {
         EMPLOYEE,
         AUTHOR,
         REVIEWER,
+        PUBLISHER,
+        NOTICE_MANAGER,
         EDITOR,
+        AUDITOR,
         ADMINISTRATOR
     }
 

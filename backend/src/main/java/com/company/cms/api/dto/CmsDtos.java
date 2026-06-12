@@ -206,6 +206,12 @@ public final class CmsDtos {
     public record Acknowledgement(String id, String contentId, String versionId, UserRef user, Instant acknowledgedAt) {
     }
 
+    public record Bookmark(String id, ContentSummary content, Instant savedAt) {
+    }
+
+    public record BookmarkCreateRequest(@NotBlank String contentId) {
+    }
+
     public record UserAcknowledgementItem(ContentSummary content, String status, Instant acknowledgedAt, Instant dueAt) {
     }
 
@@ -297,6 +303,14 @@ public final class CmsDtos {
     }
 
     public record AuditEventListResponse(List<AuditEvent> items, PageMeta page) {
+    }
+
+    public record ContentHealthReport(
+        List<ContentSummary> stale,
+        List<ContentSummary> expiring,
+        List<ContentSummary> archived,
+        List<ContentSummary> recentlyPublished
+    ) {
     }
 
     public record AuditEvent(

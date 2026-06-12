@@ -54,3 +54,11 @@ export function getAttachmentDownload(contentId: string, attachmentId: string) {
 export function getAcknowledgementReport(contentId: string) {
   return apiRequest<AcknowledgementReport>(`/api/v1/editor/acknowledgements?contentId=${encodeURIComponent(contentId)}`);
 }
+
+export function createBookmark(contentId: string) {
+  return apiRequest<{ id: string; savedAt: string }>(`/api/v1/bookmarks`, { method: "POST", body: JSON.stringify({ contentId }) });
+}
+
+export function deleteBookmark(contentId: string) {
+  return apiRequest<void>(`/api/v1/bookmarks/${encodeURIComponent(contentId)}`, { method: "DELETE" });
+}

@@ -40,6 +40,10 @@ public class ReviewService {
         if (item.getStatus() != ContentStatus.IN_REVIEW) {
             throw ApiException.conflict("Only in-review content can receive a review decision");
         }
+        if (request.decision() == ReviewDecisionAction.APPROVE && submittedByCurrentUser(item, context) && !authorizationPolicy.canAdminister(context)) {
+            auditService.record(context.currentUser().id(), "DENIED", "CONTENT_ITEM", item.getId(), "Denied self approval");
+            throw ApiException.forbidden("Reviewers cannot approve their own submitted version");
+        }
         if ((request.decision() == ReviewDecisionAction.REJECT || request.decision() == ReviewDecisionAction.REQUEST_CHANGES)
             && (request.comments() == null || request.comments().isBlank())) {
             throw ApiException.badRequest("COMMENTS_REQUIRED", "Reviewer comments are required for rejection or change requests");
@@ -68,5 +72,10 @@ public class ReviewService {
     private String latestVersionId(ContentItem item) {
         var versions = item.getVersions();
         return versions.isEmpty() ? null : versions.get(versions.size() - 1).id();
+    }
+
+    private boolean submittedByCurrentUser(ContentItem item, CmsSecurityContext context) {
+        var versions = item.getVersions();
+        return !versions.isEmpty() && context.currentUser().id().equals(versions.get(versions.size() - 1).createdBy());
     }
 }

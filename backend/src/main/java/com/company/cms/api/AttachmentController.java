@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,5 +44,11 @@ public class AttachmentController {
     @GetMapping("/{attachmentId}/download")
     public AttachmentDownload download(@PathVariable String contentId, @PathVariable String attachmentId, CmsSecurityContext context) {
         return mapper.toDownload(attachmentStorageService.download(contentId, attachmentId, context));
+    }
+
+    @DeleteMapping("/{attachmentId}")
+    public ResponseEntity<Void> delete(@PathVariable String contentId, @PathVariable String attachmentId, CmsSecurityContext context) {
+        attachmentStorageService.delete(contentId, attachmentId, context);
+        return ResponseEntity.noContent().build();
     }
 }

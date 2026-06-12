@@ -26,6 +26,7 @@ public class ContentRepository {
     private final Map<String, Attachment> attachments = new ConcurrentHashMap<>();
     private final Map<String, ReviewDecision> reviewDecisions = new ConcurrentHashMap<>();
     private final Map<String, Acknowledgement> acknowledgements = new ConcurrentHashMap<>();
+    private final Map<String, Instant> bookmarks = new ConcurrentHashMap<>();
 
     @PostConstruct
     void seed() {
@@ -118,6 +119,11 @@ public class ContentRepository {
         return attachment;
     }
 
+    public void deleteAttachment(String contentItemId, String attachmentId) {
+        var attachment = getAttachment(contentItemId, attachmentId);
+        attachments.remove(attachment.getId());
+    }
+
     public ReviewDecision saveReviewDecision(ReviewDecision decision) {
         reviewDecisions.put(decision.id(), decision);
         return decision;
@@ -166,5 +172,38 @@ public class ContentRepository {
 
     public List<Attachment> attachmentsFor(ContentItem item) {
         return new ArrayList<>(listAttachments(item.getId()));
+    }
+
+    public Instant saveBookmark(String userId, String contentItemId) {
+        String key = userId + ":" + contentItemId;
+        if (bookmarks.containsKey(key)) {
+            throw ApiException.conflict("This content is already bookmarked");
+        }
+        Instant savedAt = Instant.now();
+        bookmarks.put(key, savedAt);
+        return savedAt;
+    }
+
+    public void deleteBookmark(String userId, String contentItemId) {
+        String key = userId + ":" + contentItemId;
+        if (bookmarks.remove(key) == null) {
+            throw ApiException.notFound("Bookmark was not found");
+        }
+    }
+
+    public List<BookmarkRecord> listBookmarks(String userId) {
+        String prefix = userId + ":";
+        return bookmarks.entrySet().stream()
+            .filter(entry -> entry.getKey().startsWith(prefix))
+            .map(entry -> new BookmarkRecord(entry.getKey().substring(prefix.length()), entry.getValue()))
+            .sorted(Comparator.comparing(BookmarkRecord::savedAt).reversed())
+            .toList();
+    }
+
+    public Optional<Instant> findBookmark(String userId, String contentItemId) {
+        return Optional.ofNullable(bookmarks.get(userId + ":" + contentItemId));
+    }
+
+    public record BookmarkRecord(String contentItemId, Instant savedAt) {
     }
 }
